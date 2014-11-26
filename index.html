@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Layer selector example | CartoDB.js</title>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    <link rel="shortcut icon" href="http://cartodb.com/assets/favicon.ico" />
+    <style>
+    html,
+    body,
+    #map {
+        height: 100%;
+        padding: 0;
+        margin: 0;
+    }
+    #layer_selector {
+        position: absolute;
+        top: 10%;
+        right: 20px;
+        padding: 0;
+        vertical-align: center;
+    }
+    #layer_selector ul {
+        padding: 0;
+        margin: 0;
+        list-style-type: none;
+    }
+    #layer_selector li {
+        border-bottom: 1px solid #999;
+        padding: 15px 30px;
+        font-family: "Helvetica", Arial;
+        font-size: 13px;
+        color: #444;
+        cursor: auto;
+    }
+    #layer_selector li:hover {
+        background-color: #F0F0F0;
+        cursor: pointer;
+    }
+    #layer_selector li.selected {
+        background-color: #EEE;
+    }
+    </style>
+
+    <link rel="stylesheet" href="http://libs.cartocdn.com/cartodb.js/v3/themes/css/cartodb.css" />
+</head>
+
+<body>
+    <div id="map"></div>
+    <div id="layer_selector" class="cartodb-infobox">
+        <ul>
+            <li data="ton_orig_actual">Situación actual</li>
+            <li data="ton_tot_deriv_opt" class="selected">Derivación óptima al FFCC</li>
+            <li data="ton_tot_deriv_max">Derivación máxima al FFCC</li>
+        </ul>
+    </div>
+
+    <!-- include cartodb.js library -->
+    <script src="http://libs.cartocdn.com/cartodb.js/v3/cartodb.js"></script>
+
+    <script>
+    // create layer selector
+      function createSelector(layer) {
+        var $options = $('#layer_selector li');
+        $options.click(function(e) {
+          // get the area of the selected layer
+          var $li = $(e.target);
+          var tons = $li.attr('data');
+          // deselect all and select the clicked one
+          $options.removeClass('selected');
+          $li.addClass('selected');
+          // create query based on data from the layer
+          var css = '#tramos_ferroviarios {line-width: 7.5; line-opacity: 0.9;} #tramos_ferroviarios[trocha="ancha"] {line-color: #B81609;} #tramos_ferroviarios[trocha="angosta"] {line-color: #1F78B4;} #tramos_ferroviarios[trocha="media"] {line-color: #89d685;} #tramos_ferroviarios [ ' + tons + ' <= 26000000] {line-width: 30.0;} #tramos_ferroviarios [ ' + tons + ' <= 25133333.3333333] {line-width: 29.0;} #tramos_ferroviarios [ ' + tons + ' <= 23400000] {line-width: 28.0;} #tramos_ferroviarios [ ' + tons + ' <= 22533333.3333333] {line-width: 27.0;} #tramos_ferroviarios [ ' + tons + ' <= 21666666.6666667] {line-width: 26.0;} #tramos_ferroviarios [ ' + tons + ' <= 20800000] {line-width: 25.0;} #tramos_ferroviarios [ ' + tons + ' <= 19933333.3333333] {line-width: 24.0;} #tramos_ferroviarios [ ' + tons + ' <= 19066666.6666667] {line-width: 23.0;} #tramos_ferroviarios [ ' + tons + ' <= 18200000] {line-width: 22.0;} #tramos_ferroviarios [ ' + tons + ' <= 17333333.3333333] {line-width: 21.0;} #tramos_ferroviarios [ ' + tons + ' <= 16466666.6666667] {line-width: 20.0;} #tramos_ferroviarios [ ' + tons + ' <= 15600000] {line-width: 19.0;} #tramos_ferroviarios [ ' + tons + ' <= 14733333.3333333] {line-width: 18.0;} #tramos_ferroviarios [ ' + tons + ' <= 13866666.6666667] {line-width: 17.0;} #tramos_ferroviarios [ ' + tons + ' <= 13000000] {line-width: 16.0;} #tramos_ferroviarios [ ' + tons + ' <= 12133333.3333333] {line-width: 15.0;} #tramos_ferroviarios [ ' + tons + ' <= 11266666.6666667] {line-width: 14.0;} #tramos_ferroviarios [ ' + tons + ' <= 10400000] {line-width: 13.0;} #tramos_ferroviarios [ ' + tons + ' <= 9533333.33333333] {line-width: 12.0;} #tramos_ferroviarios [ ' + tons + ' <= 8666666.66666666] {line-width: 11.0;} #tramos_ferroviarios [ ' + tons + ' <= 7799999.99999999] {line-width: 10.0;} #tramos_ferroviarios [ ' + tons + ' <= 6933333.33333333] {line-width: 9.0;} #tramos_ferroviarios [ ' + tons + ' <= 6066666.66666666] {line-width: 8.0;} #tramos_ferroviarios [ ' + tons + ' <= 5199999.99999999] {line-width: 7.0;} #tramos_ferroviarios [ ' + tons + ' <= 4333333.33333333] {line-width: 6.0;} #tramos_ferroviarios [ ' + tons + ' <= 3466666.66666666] {line-width: 5.0;} #tramos_ferroviarios [ ' + tons + ' <= 2599999.99999999] {line-width: 4.0;} #tramos_ferroviarios [ ' + tons + ' <= 1733333.33333333] {line-width: 3.0;} #tramos_ferroviarios [ ' + tons + ' <= 866666.666666659] {line-width: 2.0;} #tramos_ferroviarios [ ' + tons + ' <= 1] {line-width: 0.0;}';
+
+          // change the query in the layer to update the map
+          layer.setCartoCSS(css);
+        });
+      }
+
+    function main() {
+
+        var url = 'http://cespa.cartodb.com/api/v2/viz/e51c1c54-1da3-11e4-b4c9-0e230854a1cb/viz.json';
+        cartodb.createVis('map', url)
+            .done(function(vis, layers) {
+                // layer 0 is the base layer, layer 1 is cartodb layer
+                var subLayer = layers[1].getSubLayer(1);
+
+                createSelector(subLayer);
+            })
+            .error(function(err) {
+                console.log(err);
+            });
+    }
+
+    window.onload = main;
+    </script>
+</body>
+
+</html>
